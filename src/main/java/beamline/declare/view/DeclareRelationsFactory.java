@@ -1,6 +1,6 @@
 package beamline.declare.view;
 
-import beamline.declare.model.DeclareModel.RELATION;
+import beamline.declare.model.SimplifiedDeclareModel.RELATION;
 import beamline.declare.view.relations.DeclareRelationAlternatePrecedence;
 import beamline.declare.view.relations.DeclareRelationAlternateResponse;
 import beamline.declare.view.relations.DeclareRelationAlternateSuccession;

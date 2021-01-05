@@ -5,18 +5,18 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Triple;
 
-import beamline.declare.model.DeclareModel;
-import beamline.declare.model.DeclareModel.RELATION;
+import beamline.declare.model.SimplifiedDeclareModel;
+import beamline.declare.model.SimplifiedDeclareModel.RELATION;
 import beamline.graphviz.Dot;
 import beamline.graphviz.DotEdge;
 import beamline.graphviz.DotNode;
 
 public class DeclareModelView extends Dot {
 
-	private DeclareModel model;
+	private SimplifiedDeclareModel model;
 	Map<String, DotNode> activityToNode;
 	
-	public DeclareModelView(DeclareModel model) {
+	public DeclareModelView(SimplifiedDeclareModel model) {
 		this.model = model;
 		this.activityToNode = new HashMap<String, DotNode>();
 		
