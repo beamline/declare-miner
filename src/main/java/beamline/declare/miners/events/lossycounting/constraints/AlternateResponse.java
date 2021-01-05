@@ -143,18 +143,18 @@ public class AlternateResponse implements LCTemplateReplayer {
 			}
 			HashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
 			if(secondElement!=null){
-			for(String second : activityLabelsAltResponse){
-				if(!second.equals(event)){
-					Integer pendingNo = 1;
-					if(secondElement.containsKey(second)){
-						pendingNo = secondElement.get(second);	
-						pendingNo ++;
+				for(String second : activityLabelsAltResponse){
+					if(!second.equals(event)){
+						Integer pendingNo = 1;
+						if(secondElement.containsKey(second)){
+							pendingNo = secondElement.get(second);	
+							pendingNo ++;
+						}
+						secondElement.put(second, pendingNo);
 					}
-					secondElement.put(second, pendingNo);
 				}
-			}
-			pendingForThisTrace.put(event,secondElement);
-			pendingConstraintsPerTraceAlt.putItem(trace, pendingForThisTrace);
+				pendingForThisTrace.put(event,secondElement);
+				pendingConstraintsPerTraceAlt.putItem(trace, pendingForThisTrace);
 			}
 			//activityLabelsCounter.put(trace, counter);
 

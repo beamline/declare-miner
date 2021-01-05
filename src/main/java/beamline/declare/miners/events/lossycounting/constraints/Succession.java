@@ -131,16 +131,18 @@ public class Succession implements LCTemplateReplayer {
 			fulfilledConstraintsPerTraceSuccession.putItem(caseId, fulfilledForThisTrace);
 //			fulfilledConstraintsPerTraceSuccession.put(caseId, fulfilledForThisTrace);
 			HashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
-			for (String second : secondElement.keySet()) {
-				if (!second.equals(event)) {
-					Integer pendingNo = secondElement.get(second);
-					pendingNo++;
-					secondElement.put(second, pendingNo);
+			if (secondElement != null) {
+				for (String second : secondElement.keySet()) {
+					if (!second.equals(event)) {
+						Integer pendingNo = secondElement.get(second);
+						pendingNo++;
+						secondElement.put(second, pendingNo);
+					}
 				}
+				pendingForThisTrace.put(event, secondElement);
+				pendingConstraintsPerTraceSuccession.putItem(caseId, pendingForThisTrace);
+	//			pendingConstraintsPerTraceSuccession.put(caseId, pendingForThisTrace);
 			}
-			pendingForThisTrace.put(event, secondElement);
-			pendingConstraintsPerTraceSuccession.putItem(caseId, pendingForThisTrace);
-//			pendingConstraintsPerTraceSuccession.put(caseId, pendingForThisTrace);
 
 			// activityLabelsCounter.put(trace, counter);
 		}

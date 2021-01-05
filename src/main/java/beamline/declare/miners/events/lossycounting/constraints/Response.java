@@ -93,16 +93,18 @@ public class Response implements LCTemplateReplayer {
 				}
 			}
 			HashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
-			for (String second : secondElement.keySet()) {
-				if (!second.equals(event)) {
-					Integer pendingNo = secondElement.get(second);
-					pendingNo++;
-					secondElement.put(second, pendingNo);
+			if (secondElement != null) {
+				for (String second : secondElement.keySet()) {
+					if (!second.equals(event)) {
+						Integer pendingNo = secondElement.get(second);
+						pendingNo++;
+						secondElement.put(second, pendingNo);
+					}
 				}
+				pendingForThisTrace.put(event, secondElement);
+				pendingConstraintsPerTrace.putItem(caseId, pendingForThisTrace);
+//				pendingConstraintsPerTrace.put(caseId, pendingForThisTrace);
 			}
-			pendingForThisTrace.put(event, secondElement);
-			pendingConstraintsPerTrace.putItem(caseId, pendingForThisTrace);
-//			pendingConstraintsPerTrace.put(caseId, pendingForThisTrace);
 
 			// activityLabelsCounter.put(trace, counter);
 		}
