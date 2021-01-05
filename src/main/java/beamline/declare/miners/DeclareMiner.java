@@ -13,7 +13,6 @@ import beamline.core.web.miner.models.MinerParameter;
 import beamline.core.web.miner.models.MinerParameterValue;
 import beamline.core.web.miner.models.MinerView;
 import beamline.core.web.miner.models.MinerView.Type;
-import beamline.core.web.miner.models.notifications.Notification;
 import beamline.core.web.miner.models.notifications.RefreshViewNotification;
 import beamline.declare.miners.events.lossycounting.LCReplayer;
 import beamline.declare.model.DeclareModel;
@@ -21,11 +20,14 @@ import beamline.declare.model.SimplifiedDeclareModel;
 import beamline.declare.view.DeclareModelView;
 
 @ExposedMiner(
-	name = "Declare Miner",
+	name = "Declare Miner with Lossy Counting",
 	description = "This miner discovers a Declare model",
-	configurationParameters = { },
+	configurationParameters = {
+		@ExposedMinerParameter(name = "Maximal error", type = MinerParameter.Type.DOUBLE, defaultValue = "0.005")
+	},
 	viewParameters = {
-//		@ExposedMinerParameter(name = "Number of constraints to show", type = MinerParameter.Type.INTEGER)
+		@ExposedMinerParameter(name = "Number of constraints to show", type = MinerParameter.Type.INTEGER, defaultValue = "10"),
+		@ExposedMinerParameter(name = "Update model frequency", type = MinerParameter.Type.INTEGER, defaultValue = "1000")
 	}
 )
 public class DeclareMiner extends AbstractMiner {
@@ -35,10 +37,18 @@ public class DeclareMiner extends AbstractMiner {
 	private double maximalError = 0.005;
 	private LCReplayer replayer = new LCReplayer();
 	private int bucketWidth;
+	
 	private int modelUpdateFrequency = 1000;
+	private int constraintsToShow = 10;
 
 	@Override
 	public void configure(Collection<MinerParameterValue> collection) {
+		for(MinerParameterValue v : collection) {
+			if (v.getName().equals("Maximal error") && v.getType() == MinerParameter.Type.DOUBLE) {
+				maximalError = Double.parseDouble(v.getValue().toString());
+			}
+		}
+		
 		bucketWidth = (int)(1.0 / maximalError);
 	}
 
@@ -66,6 +76,15 @@ public class DeclareMiner extends AbstractMiner {
 
 	@Override
 	public List<MinerView> getViews(Collection<MinerParameterValue> collection) {
+		for(MinerParameterValue v : collection) {
+			if (v.getName().equals("Number of constraints to show")) {
+				constraintsToShow = Integer.parseInt(v.getValue().toString());
+			}
+			if (v.getName().equals("Update model frequency")) {
+				modelUpdateFrequency = Integer.parseInt(v.getValue().toString());
+			}
+		}
+		
 		Pair<SimplifiedDeclareModel, DeclareModel> model = getModel();
 		
 		List<MinerView> views = new ArrayList<>();
@@ -82,7 +101,7 @@ public class DeclareMiner extends AbstractMiner {
 		} else {
 			filteredModel = DeclareModel.filterOnFulfillmentRatio(model, 1.0);
 		}
-		DeclareModel filteredSmallModel = DeclareModel.getTopConstraints(filteredModel, 10);
+		DeclareModel filteredSmallModel = DeclareModel.getTopConstraints(filteredModel, constraintsToShow);
 
 		SimplifiedDeclareModel simplifiedModel = new SimplifiedDeclareModel();
 		simplifiedModel.addConstraintsFromModel(filteredSmallModel);

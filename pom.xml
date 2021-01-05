@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>beamline</groupId>
 			<artifactId>core</artifactId>
-			<version>0.0.12</version>
+			<version>0.0.14</version>
 		</dependency>
 		<dependency>
 			<groupId>beamline</groupId>
