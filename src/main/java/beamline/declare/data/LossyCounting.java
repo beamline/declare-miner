@@ -1,8 +1,8 @@
 package beamline.declare.data;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -18,7 +18,7 @@ import org.apache.commons.lang3.tuple.Triple;
  * 
  * @author Andrea Burattin
  */
-public class LossyCounting<T> extends HashMap<String, Triple<T, Integer, Integer>> {
+public class LossyCounting<T> extends ConcurrentHashMap<String, Triple<T, Integer, Integer>> {
 	
 	private static final long serialVersionUID = -973856497040719491L;
 	private int size = 0;

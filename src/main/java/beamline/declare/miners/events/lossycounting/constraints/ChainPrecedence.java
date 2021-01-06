@@ -1,7 +1,9 @@
 package beamline.declare.miners.events.lossycounting.constraints;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Sets;
 
 import beamline.declare.data.LossyCounting;
 import beamline.declare.miners.events.lossycounting.LCTemplateReplayer;
@@ -9,15 +11,15 @@ import beamline.declare.model.DeclareModel;
 
 public class ChainPrecedence implements LCTemplateReplayer {
 
-	private HashSet<String> activityLabelsChPrecedence = new HashSet<String>();
-	private LossyCounting<HashMap<String,Integer>> activityLabelsCounterChPrecedence = new LossyCounting<HashMap<String, Integer>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> fulfilledConstraintsPerTraceChPrecedence = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
+	private Set<String> activityLabelsChPrecedence = Sets.<String>newConcurrentHashSet();
+	private LossyCounting<ConcurrentHashMap<String,Integer>> activityLabelsCounterChPrecedence = new LossyCounting<ConcurrentHashMap<String, Integer>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> fulfilledConstraintsPerTraceChPrecedence = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
 	private LossyCounting<String> lastActivity = new LossyCounting<String>();
 
 	@Override
 	public void addObservation(String caseId, Integer currentBucket) {
-		HashMap<String, HashMap<String, Integer>> ex1 = new HashMap<String, HashMap<String, Integer>>();
-		HashMap<String, Integer> ex2 = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> ex1 = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
+		ConcurrentHashMap<String, Integer> ex2 = new ConcurrentHashMap<String, Integer>();
 		@SuppressWarnings("rawtypes")
 		Class class1 = ex1.getClass();
 		@SuppressWarnings("rawtypes")
@@ -44,13 +46,13 @@ public class ChainPrecedence implements LCTemplateReplayer {
 	@Override
 	public void process(String event, String caseId) {
 		activityLabelsChPrecedence.add(event);
-		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> counter = new ConcurrentHashMap<String, Integer>();
 		if(!activityLabelsCounterChPrecedence.containsKey(caseId)){
 			activityLabelsCounterChPrecedence.putItem(caseId, counter);
 		}else{
 			counter = activityLabelsCounterChPrecedence.getItem(caseId);
 		}
-		HashMap<String,HashMap<String,Integer>> fulfilledForThisTrace = new HashMap<String,HashMap<String,Integer>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>> fulfilledForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>>();
 		if(!fulfilledConstraintsPerTraceChPrecedence.containsKey(caseId)){
 			fulfilledConstraintsPerTraceChPrecedence.putItem(caseId, fulfilledForThisTrace);
 		}else{
@@ -58,7 +60,7 @@ public class ChainPrecedence implements LCTemplateReplayer {
 		}
 		String previousChPrecedence = lastActivity.getItem(caseId);
 		if(previousChPrecedence!=null && !previousChPrecedence.equals("") && !previousChPrecedence.equals(event)){
-			HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+			ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 			if(fulfilledForThisTrace.containsKey(previousChPrecedence)){
 				secondElement = fulfilledForThisTrace.get(previousChPrecedence);
 			}
@@ -96,8 +98,8 @@ public class ChainPrecedence implements LCTemplateReplayer {
 					double fulfill = 0;
 					double act = 0;
 					for(String caseId : activityLabelsCounterChPrecedence.keySet()) {
-						HashMap<String, Integer> counter = activityLabelsCounterChPrecedence.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceChPrecedence.getItem(caseId);
+						ConcurrentHashMap<String, Integer> counter = activityLabelsCounterChPrecedence.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceChPrecedence.getItem(caseId);
 
 						if(counter.containsKey(param2)){
 							double totnumber = counter.get(param2);

@@ -1,7 +1,9 @@
 package beamline.declare.miners.events.lossycounting.constraints;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Sets;
 
 import beamline.declare.data.LossyCounting;
 import beamline.declare.miners.events.lossycounting.LCTemplateReplayer;
@@ -9,15 +11,15 @@ import beamline.declare.model.DeclareModel;
 
 public class ChainResponse implements LCTemplateReplayer {
 
-	private HashSet<String> activityLabelsChResponse = new HashSet<String>();
-	private LossyCounting<HashMap<String, Integer>> activityLabelsCounterChResponse = new LossyCounting<HashMap<String, Integer>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> fulfilledConstraintsPerTraceCh = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
+	private Set<String> activityLabelsChResponse = Sets.<String>newConcurrentHashSet();
+	private LossyCounting<ConcurrentHashMap<String, Integer>> activityLabelsCounterChResponse = new LossyCounting<ConcurrentHashMap<String, Integer>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> fulfilledConstraintsPerTraceCh = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
 	private LossyCounting<String> lastActivity = new LossyCounting<String>();
 
 	@Override
 	public void addObservation(String caseId, Integer currentBucket) {
-		HashMap<String, HashMap<String, Integer>> ex1 = new HashMap<String, HashMap<String, Integer>>();
-		HashMap<String, Integer> ex2 = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> ex1 = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
+		ConcurrentHashMap<String, Integer> ex2 = new ConcurrentHashMap<String, Integer>();
 		@SuppressWarnings("rawtypes")
 		Class class1 = ex1.getClass();
 		@SuppressWarnings("rawtypes")
@@ -44,13 +46,13 @@ public class ChainResponse implements LCTemplateReplayer {
 	@Override
 	public void process(String event, String caseId) {
 		activityLabelsChResponse.add(event);
-		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> counter = new ConcurrentHashMap<String, Integer>();
 		if(!activityLabelsCounterChResponse.containsKey(caseId)){
 			activityLabelsCounterChResponse.putItem(caseId, counter);
 		}else{
 			counter = activityLabelsCounterChResponse.getItem(caseId);
 		}
-		HashMap<String,HashMap<String,Integer>> fulfilledForThisTrace = new HashMap<String,HashMap<String,Integer>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>> fulfilledForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>>();
 		if(!fulfilledConstraintsPerTraceCh.containsKey(caseId)){
 			fulfilledConstraintsPerTraceCh.putItem(caseId, fulfilledForThisTrace);
 		}else{
@@ -58,7 +60,7 @@ public class ChainResponse implements LCTemplateReplayer {
 		}
 		String previous = lastActivity.getItem(caseId);
 		if(previous!=null && !previous.equals("") && !previous.equals(event)){
-			HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+			ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 			if(fulfilledForThisTrace.containsKey(previous)){
 				secondElement = fulfilledForThisTrace.get(previous);
 			}
@@ -96,8 +98,8 @@ public class ChainResponse implements LCTemplateReplayer {
 					double fulfill = 0;
 					double act = 0;
 					for(String caseId : activityLabelsCounterChResponse.keySet()) {
-						HashMap<String, Integer> counter = activityLabelsCounterChResponse.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceCh.getItem(caseId);
+						ConcurrentHashMap<String, Integer> counter = activityLabelsCounterChResponse.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceCh.getItem(caseId);
 
 						if(counter.containsKey(param1)){
 							double totnumber = counter.get(param1);

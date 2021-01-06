@@ -1,7 +1,9 @@
 package beamline.declare.miners.events.lossycounting.constraints;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Sets;
 
 import beamline.declare.data.LossyCounting;
 import beamline.declare.miners.events.lossycounting.LCTemplateReplayer;
@@ -9,15 +11,15 @@ import beamline.declare.model.DeclareModel;
 
 public class Succession implements LCTemplateReplayer {
 	
-	private HashSet<String> activityLabelsSuccession = new HashSet<String>();
-	private LossyCounting<HashMap<String, Integer>> activityLabelsCounterSuccession = new LossyCounting<HashMap<String, Integer>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> pendingConstraintsPerTraceSuccession = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> fulfilledConstraintsPerTraceSuccession = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
+	private Set<String> activityLabelsSuccession = Sets.<String>newConcurrentHashSet();
+	private LossyCounting<ConcurrentHashMap<String, Integer>> activityLabelsCounterSuccession = new LossyCounting<ConcurrentHashMap<String, Integer>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> pendingConstraintsPerTraceSuccession = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> fulfilledConstraintsPerTraceSuccession = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
 
 	@Override
 	public void addObservation(String caseId, Integer currentBucket) {
-		HashMap<String, HashMap<String, Integer>> ex1 = new HashMap<String, HashMap<String, Integer>>();
-		HashMap<String, Integer> ex2 = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> ex1 = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
+		ConcurrentHashMap<String, Integer> ex2 = new ConcurrentHashMap<String, Integer>();
 		@SuppressWarnings("rawtypes")
 		Class class1 = ex1.getClass();
 		@SuppressWarnings("rawtypes")
@@ -42,21 +44,21 @@ public class Succession implements LCTemplateReplayer {
 	@Override
 	public void process(String event, String caseId) {
 		activityLabelsSuccession.add(event);
-		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> counter = new ConcurrentHashMap<String, Integer>();
 		if (!activityLabelsCounterSuccession.containsKey(caseId)) {
 			activityLabelsCounterSuccession.putItem(caseId, counter);
 		} else {
 			counter = activityLabelsCounterSuccession.getItem(caseId);
 		}
 		
-		HashMap<String, HashMap<String, Integer>> pendingForThisTrace = new HashMap<String, HashMap<String, Integer>>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> pendingForThisTrace = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
 		if (!pendingConstraintsPerTraceSuccession.containsKey(caseId)) {
 			pendingConstraintsPerTraceSuccession.putItem(caseId, pendingForThisTrace);
 		} else {
 			pendingForThisTrace = pendingConstraintsPerTraceSuccession.getItem(caseId);
 		}
 
-		HashMap<String, HashMap<String, Integer>> fulfilledForThisTrace = new HashMap<String, HashMap<String, Integer>>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> fulfilledForThisTrace = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
 		if (!fulfilledConstraintsPerTraceSuccession.containsKey(caseId)) {
 			fulfilledConstraintsPerTraceSuccession.putItem(caseId, fulfilledForThisTrace);
 		} else {
@@ -67,14 +69,14 @@ public class Succession implements LCTemplateReplayer {
 			if (activityLabelsSuccession.size() > 1) {
 				for (String existingEvent : activityLabelsSuccession) {
 					if (!existingEvent.equals(event)) {
-						HashMap<String, Integer> secondElement = new HashMap<String, Integer>();
+						ConcurrentHashMap<String, Integer> secondElement = new ConcurrentHashMap<String, Integer>();
 						if (pendingForThisTrace.containsKey(existingEvent)) {
 							secondElement = pendingForThisTrace.get(existingEvent);
 						}
 						secondElement.put(event, 0);
 						pendingForThisTrace.put(existingEvent, secondElement);
 
-						HashMap<String, Integer> secondElement2 = new HashMap<String, Integer>();
+						ConcurrentHashMap<String, Integer> secondElement2 = new ConcurrentHashMap<String, Integer>();
 						int fulfillments = 0;
 						if (fulfilledForThisTrace.containsKey(existingEvent)) {
 							secondElement2 = fulfilledForThisTrace.get(existingEvent);
@@ -93,7 +95,7 @@ public class Succession implements LCTemplateReplayer {
 //				fulfilledConstraintsPerTraceSuccession.put(caseId, fulfilledForThisTrace);
 				for (String existingEvent : activityLabelsSuccession) {
 					if (!existingEvent.equals(event)) {
-						HashMap<String, Integer> secondElement = new HashMap<String, Integer>();
+						ConcurrentHashMap<String, Integer> secondElement = new ConcurrentHashMap<String, Integer>();
 						if (pendingForThisTrace.containsKey(event)) {
 							secondElement = pendingForThisTrace.get(event);
 						}
@@ -108,13 +110,13 @@ public class Succession implements LCTemplateReplayer {
 
 			for (String firstElement : pendingForThisTrace.keySet()) {
 				if (!firstElement.equals(event)) {
-					HashMap<String, Integer> secondElement = pendingForThisTrace.get(firstElement);
+					ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(firstElement);
 					secondElement.put(event, 0);
 					pendingForThisTrace.put(firstElement, secondElement);
 					pendingConstraintsPerTraceSuccession.putItem(caseId, pendingForThisTrace);
 //					pendingConstraintsPerTraceSuccession.put(caseId, pendingForThisTrace);
 
-					HashMap<String, Integer> secondElement2 = new HashMap<String, Integer>();
+					ConcurrentHashMap<String, Integer> secondElement2 = new ConcurrentHashMap<String, Integer>();
 					int fulfillments = 0;
 					if (fulfilledForThisTrace.containsKey(firstElement)) {
 						secondElement2 = fulfilledForThisTrace.get(firstElement);
@@ -130,7 +132,7 @@ public class Succession implements LCTemplateReplayer {
 			}
 			fulfilledConstraintsPerTraceSuccession.putItem(caseId, fulfilledForThisTrace);
 //			fulfilledConstraintsPerTraceSuccession.put(caseId, fulfilledForThisTrace);
-			HashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
+			ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
 			if (secondElement != null) {
 				for (String second : secondElement.keySet()) {
 					if (!second.equals(event)) {
@@ -172,14 +174,14 @@ public class Succession implements LCTemplateReplayer {
 					double fulfill = 0.0;
 					double act = 0.0;
 					for(String caseId : activityLabelsCounterSuccession.keySet()) {
-						HashMap<String, Integer> counter = activityLabelsCounterSuccession.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTraceSuccession.getItem(caseId);
+						ConcurrentHashMap<String, Integer> counter = activityLabelsCounterSuccession.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTraceSuccession.getItem(caseId);
 						if (pendingForThisTrace == null) {
-							pendingForThisTrace = new HashMap<String, HashMap<String, Integer>>();
+							pendingForThisTrace = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
 						}
-						HashMap<String, HashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceSuccession.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceSuccession.getItem(caseId);
 						if (fulfillForThisTrace == null) {
-							fulfillForThisTrace = new HashMap<String, HashMap<String, Integer>>();
+							fulfillForThisTrace = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
 						}
 						if(counter.containsKey(param1)){
 							double totnumber = counter.get(param1);

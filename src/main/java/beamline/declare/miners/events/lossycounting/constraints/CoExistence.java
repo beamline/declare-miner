@@ -1,7 +1,9 @@
 package beamline.declare.miners.events.lossycounting.constraints;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Sets;
 
 import beamline.declare.data.LossyCounting;
 import beamline.declare.miners.events.lossycounting.LCTemplateReplayer;
@@ -9,14 +11,14 @@ import beamline.declare.model.DeclareModel;
 
 public class CoExistence implements LCTemplateReplayer {
 
-	private HashSet<String> activityLabelsCoExistence = new HashSet<String>();
-	private LossyCounting<HashMap<String, Integer>> activityLabelsCounterCoExistence = new LossyCounting<HashMap<String, Integer>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> pendingConstraintsPerTraceCo = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
+	private Set<String> activityLabelsCoExistence = Sets.<String>newConcurrentHashSet();
+	private LossyCounting<ConcurrentHashMap<String, Integer>> activityLabelsCounterCoExistence = new LossyCounting<ConcurrentHashMap<String, Integer>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> pendingConstraintsPerTraceCo = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
 
 	@Override
 	public void addObservation(String caseId, Integer currentBucket) {
-		HashMap<String, HashMap<String, Integer>> ex1 = new HashMap<String, HashMap<String, Integer>>();
-		HashMap<String, Integer> ex2 = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> ex1 = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
+		ConcurrentHashMap<String, Integer> ex2 = new ConcurrentHashMap<String, Integer>();
 		@SuppressWarnings("rawtypes")
 		Class class1 = ex1.getClass();
 		@SuppressWarnings("rawtypes")
@@ -41,13 +43,13 @@ public class CoExistence implements LCTemplateReplayer {
 	@Override
 	public void process(String event, String caseId) {
 		activityLabelsCoExistence.add(event);
-		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> counter = new ConcurrentHashMap<String, Integer>();
 		if(!activityLabelsCounterCoExistence.containsKey(caseId)){
 			activityLabelsCounterCoExistence.putItem(caseId, counter);
 		}else{
 			counter = activityLabelsCounterCoExistence.getItem(caseId);
 		}
-		HashMap<String,HashMap<String,Integer>> pendingForThisTrace = new HashMap<String,HashMap<String,Integer>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>> pendingForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>>();
 		if(!pendingConstraintsPerTraceCo.containsKey(caseId)){
 			pendingConstraintsPerTraceCo.putItem(caseId, pendingForThisTrace);
 		}else{
@@ -58,26 +60,26 @@ public class CoExistence implements LCTemplateReplayer {
 				for(String existingEvent : activityLabelsCoExistence){
 					if(!existingEvent.equals(event)){	
 						if(counter.containsKey(existingEvent)){
-							HashMap<String, Integer> secondElement1 = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement1 = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(existingEvent)){
 								secondElement1 = pendingForThisTrace.get(existingEvent);
 							}
 							secondElement1.put(event, 0);
 							pendingForThisTrace.put(existingEvent,secondElement1);
-							HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(event)){
 								secondElement = pendingForThisTrace.get(event);
 							}
 							secondElement.put(existingEvent, 0);
 							pendingForThisTrace.put(event, secondElement);
 						}else{
-							HashMap<String, Integer> secondElement1 = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement1 = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(existingEvent)){
 								secondElement1 = pendingForThisTrace.get(existingEvent);
 							}
 							secondElement1.put(event, 1);
 							pendingForThisTrace.put(existingEvent,secondElement1);
-							HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(event)){
 								secondElement = pendingForThisTrace.get(event);
 							}
@@ -94,13 +96,13 @@ public class CoExistence implements LCTemplateReplayer {
 				for(String existingEvent : activityLabelsCoExistence){
 					if(!existingEvent.equals(event)){	
 						if(counter.containsKey(existingEvent)){
-							HashMap<String, Integer> secondElement1 = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement1 = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(existingEvent)){
 								secondElement1 = pendingForThisTrace.get(existingEvent);
 							}
 							secondElement1.put(event, 0);
 							pendingForThisTrace.put(existingEvent,secondElement1);
-							HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(event)){
 								secondElement = pendingForThisTrace.get(event);
 							}
@@ -108,7 +110,7 @@ public class CoExistence implements LCTemplateReplayer {
 							pendingForThisTrace.put(event,secondElement);
 
 						}else{
-							HashMap<String, Integer> secondElement1 = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement1 = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(event)){
 								secondElement1 = pendingForThisTrace.get(event);
 							}
@@ -121,7 +123,7 @@ public class CoExistence implements LCTemplateReplayer {
 							secondElement1.put(existingEvent, pendingNo);
 							pendingForThisTrace.put(event,secondElement1);
 
-							HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 							if(pendingForThisTrace.containsKey(existingEvent)){
 								secondElement = pendingForThisTrace.get(existingEvent);
 							}
@@ -164,10 +166,10 @@ public class CoExistence implements LCTemplateReplayer {
 					double act = 0.0;
 					boolean found = false;
 					for(String caseId : activityLabelsCounterCoExistence.keySet()) {
-						HashMap<String, Integer> counter = activityLabelsCounterCoExistence.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTraceCo.getItem(caseId);
+						ConcurrentHashMap<String, Integer> counter = activityLabelsCounterCoExistence.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTraceCo.getItem(caseId);
 						if (pendingForThisTrace == null) {
-							pendingForThisTrace = new HashMap<String, HashMap<String, Integer>>();
+							pendingForThisTrace = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
 						}
 
 						double tot = 0;

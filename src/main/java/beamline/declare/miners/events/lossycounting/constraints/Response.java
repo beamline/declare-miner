@@ -1,7 +1,9 @@
 package beamline.declare.miners.events.lossycounting.constraints;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Sets;
 
 import beamline.declare.data.LossyCounting;
 import beamline.declare.miners.events.lossycounting.LCTemplateReplayer;
@@ -9,15 +11,15 @@ import beamline.declare.model.DeclareModel;
 
 public class Response implements LCTemplateReplayer {
 	
-	private HashSet<String> activityLabelsResponse = new HashSet<String>();
-	private LossyCounting<HashMap<String, Integer>> activityLabelsCounterResponse = new LossyCounting<HashMap<String, Integer>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> pendingConstraintsPerTrace = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> fulfilledConstraintsPerTrace = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
+	private Set<String> activityLabelsResponse = Sets.<String>newConcurrentHashSet();
+	private LossyCounting<ConcurrentHashMap<String, Integer>> activityLabelsCounterResponse = new LossyCounting<ConcurrentHashMap<String, Integer>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> pendingConstraintsPerTrace = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> fulfilledConstraintsPerTrace = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
 
 	@Override
 	public void addObservation(String caseId, Integer currentBucket) {
-		HashMap<String, HashMap<String, Integer>> ex1 = new HashMap<String, HashMap<String, Integer>>();
-		HashMap<String, Integer> ex2 = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> ex1 = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
+		ConcurrentHashMap<String, Integer> ex2 = new ConcurrentHashMap<String, Integer>();
 		@SuppressWarnings("rawtypes")
 		Class class1 = ex1.getClass();
 		@SuppressWarnings("rawtypes")
@@ -42,14 +44,14 @@ public class Response implements LCTemplateReplayer {
 	@Override
 	public void process(String event, String caseId) {
 		activityLabelsResponse.add(event);
-		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> counter = new ConcurrentHashMap<String, Integer>();
 		if (!activityLabelsCounterResponse.containsKey(caseId)) {
 			activityLabelsCounterResponse.putItem(caseId, counter);
 		} else {
 			counter = activityLabelsCounterResponse.getItem(caseId);
 		}
 		
-		HashMap<String, HashMap<String, Integer>> pendingForThisTrace = new HashMap<String, HashMap<String, Integer>>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> pendingForThisTrace = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
 		if (!pendingConstraintsPerTrace.containsKey(caseId)) {
 			pendingConstraintsPerTrace.putItem(caseId, pendingForThisTrace);
 		} else {
@@ -60,7 +62,7 @@ public class Response implements LCTemplateReplayer {
 			if (activityLabelsResponse.size() > 1) {
 				for (String existingEvent : activityLabelsResponse) {
 					if (!existingEvent.equals(event)) {
-						HashMap<String, Integer> secondElement = new HashMap<String, Integer>();
+						ConcurrentHashMap<String, Integer> secondElement = new ConcurrentHashMap<String, Integer>();
 						if (pendingForThisTrace.containsKey(existingEvent)) {
 							secondElement = pendingForThisTrace.get(existingEvent);
 						}
@@ -70,7 +72,7 @@ public class Response implements LCTemplateReplayer {
 				}
 				for (String existingEvent : activityLabelsResponse) {
 					if (!existingEvent.equals(event)) {
-						HashMap<String, Integer> secondElement = new HashMap<String, Integer>();
+						ConcurrentHashMap<String, Integer> secondElement = new ConcurrentHashMap<String, Integer>();
 						if (pendingForThisTrace.containsKey(event)) {
 							secondElement = pendingForThisTrace.get(event);
 						}
@@ -85,14 +87,14 @@ public class Response implements LCTemplateReplayer {
 
 			for (String firstElement : pendingForThisTrace.keySet()) {
 				if (!firstElement.equals(event)) {
-					HashMap<String, Integer> secondElement = pendingForThisTrace.get(firstElement);
+					ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(firstElement);
 					secondElement.put(event, 0);
 					pendingForThisTrace.put(firstElement, secondElement);
 					pendingConstraintsPerTrace.putItem(caseId, pendingForThisTrace);
 //					pendingConstraintsPerTrace.put(caseId, pendingForThisTrace);
 				}
 			}
-			HashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
+			ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
 			if (secondElement != null) {
 				for (String second : secondElement.keySet()) {
 					if (!second.equals(event)) {
@@ -134,10 +136,10 @@ public class Response implements LCTemplateReplayer {
 					double fulfill = 0.0;
 					double act = 0.0;
 					for(String caseId : activityLabelsCounterResponse.keySet()) {
-						HashMap<String, Integer> counter = activityLabelsCounterResponse.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTrace.getItem(caseId);
+						ConcurrentHashMap<String, Integer> counter = activityLabelsCounterResponse.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTrace.getItem(caseId);
 						if (pendingForThisTrace == null) {
-							pendingForThisTrace = new HashMap<String, HashMap<String, Integer>>();
+							pendingForThisTrace = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
 						}
 						if(counter.containsKey(param1)){
 							double totnumber = counter.get(param1);

@@ -1,7 +1,9 @@
 package beamline.declare.miners.events.lossycounting.constraints;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Sets;
 
 import beamline.declare.data.LossyCounting;
 import beamline.declare.miners.events.lossycounting.LCTemplateReplayer;
@@ -9,26 +11,26 @@ import beamline.declare.model.DeclareModel;
 
 public class AlternateSuccession implements LCTemplateReplayer {
 
-	private HashSet<String> activityLabelsAltResponse = new HashSet<String>();
-	private LossyCounting<HashMap<String, Integer>> activityLabelsCounterAltResponse = new LossyCounting<HashMap<String, Integer>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> pendingConstraintsPerTraceAlt = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> violatedConstraintsPerTrace = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
-	//	private LossyCounting<HashMap<String, HashMap<String, Boolean>>> isDuplicatedActivationPerTrace = new LossyCounting<HashMap<String, HashMap<String, Boolean>>>();
+	private Set<String> activityLabelsAltResponse = Sets.<String>newConcurrentHashSet();
+	private LossyCounting<ConcurrentHashMap<String, Integer>> activityLabelsCounterAltResponse = new LossyCounting<ConcurrentHashMap<String, Integer>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> pendingConstraintsPerTraceAlt = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> violatedConstraintsPerTrace = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
+	//	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>> isDuplicatedActivationPerTrace = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>();
 	
-	private HashSet<String> activityLabelsAltPrecedence = new HashSet<String>();
-	private LossyCounting<HashMap<String, Integer>> activityLabelsCounterAltPrecedence = new LossyCounting<HashMap<String, Integer>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> fulfilledConstraintsPerTraceAlt = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
-	private LossyCounting<HashMap<String, HashMap<String, Integer>>> satisfactionsConstraintsPerTrace = new LossyCounting<HashMap<String, HashMap<String, Integer>>>();
-	private LossyCounting<HashMap<String, HashMap<String, Boolean>>> isDuplicatedActivationPerTrace = new LossyCounting<HashMap<String, HashMap<String, Boolean>>>();
+	private Set<String> activityLabelsAltPrecedence = Sets.<String>newConcurrentHashSet();
+	private LossyCounting<ConcurrentHashMap<String, Integer>> activityLabelsCounterAltPrecedence = new LossyCounting<ConcurrentHashMap<String, Integer>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> fulfilledConstraintsPerTraceAlt = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>> satisfactionsConstraintsPerTrace = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>>();
+	private LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>> isDuplicatedActivationPerTrace = new LossyCounting<ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>();
 
 	
 	
 	
 	@Override
 	public void addObservation(String caseId, Integer currentBucket) {
-		HashMap<String, HashMap<String, Integer>> ex1 = new HashMap<String, HashMap<String, Integer>>();
-		HashMap<String, Integer> ex2 = new HashMap<String, Integer>();
-		HashMap<String, HashMap<String, Boolean>> ex3 = new HashMap<String, HashMap<String, Boolean>>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> ex1 = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
+		ConcurrentHashMap<String, Integer> ex2 = new ConcurrentHashMap<String, Integer>();
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>> ex3 = new ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>();
 		@SuppressWarnings("rawtypes")
 		Class class1 = ex1.getClass();
 		@SuppressWarnings("rawtypes")
@@ -66,19 +68,19 @@ public class AlternateSuccession implements LCTemplateReplayer {
 
 	@Override
 	public void process(String event, String trace) {
-		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> counter = new ConcurrentHashMap<String, Integer>();
 		if(!activityLabelsCounterAltResponse.containsKey(trace)){
 			activityLabelsCounterAltResponse.putItem(trace, counter);
 		}else{
 			counter = activityLabelsCounterAltResponse.getItem(trace);
 		}
-		HashMap<String,HashMap<String,Integer>> pendingForThisTrace = new HashMap<String,HashMap<String,Integer>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>> pendingForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>>();
 		if(!pendingConstraintsPerTraceAlt.containsKey(trace)){
 			pendingConstraintsPerTraceAlt.putItem(trace, pendingForThisTrace);
 		}else{
 			pendingForThisTrace = pendingConstraintsPerTraceAlt.getItem(trace);
 		}
-		HashMap<String,HashMap<String,Integer>> violatedForThisTrace = new HashMap<String,HashMap<String,Integer>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>> violatedForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>>();
 		if(!violatedConstraintsPerTrace.containsKey(trace)){
 			violatedConstraintsPerTrace.putItem(trace, violatedForThisTrace);
 		}else{
@@ -96,12 +98,12 @@ public class AlternateSuccession implements LCTemplateReplayer {
 								pend = activityLabelsCounterAltResponse.getItem(trace).get(existingEvent);
 							}
 						}
-						HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+						ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 						if(pendingForThisTrace.containsKey(existingEvent)){
 							secondElement = pendingForThisTrace.get(existingEvent);
 						}
 						if(pend>1){
-							HashMap<String, Integer> secondEl = new  HashMap<String, Integer>();
+							ConcurrentHashMap<String, Integer> secondEl = new  ConcurrentHashMap<String, Integer>();
 							if(violatedForThisTrace.containsKey(existingEvent)){
 								secondEl = violatedForThisTrace.get(existingEvent);
 							}
@@ -118,7 +120,7 @@ public class AlternateSuccession implements LCTemplateReplayer {
 				}
 				for(String existingEvent : activityLabelsAltResponse){
 					if(!existingEvent.equals(event)){
-						HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+						ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 						if(pendingForThisTrace.containsKey(event)){
 							secondElement = pendingForThisTrace.get(event);
 						}
@@ -134,11 +136,11 @@ public class AlternateSuccession implements LCTemplateReplayer {
 
 			for(String firstElement : activityLabelsAltResponse){
 				if(!firstElement.equals(event)){
-					HashMap<String, Integer> secondEl = new  HashMap<String, Integer>();
+					ConcurrentHashMap<String, Integer> secondEl = new  ConcurrentHashMap<String, Integer>();
 					if(violatedForThisTrace.containsKey(firstElement)){
 						secondEl = violatedForThisTrace.get(firstElement);
 					}
-					HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+					ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 					if(pendingForThisTrace.containsKey(firstElement)){
 						secondElement = pendingForThisTrace.get(firstElement);
 					}
@@ -160,7 +162,7 @@ public class AlternateSuccession implements LCTemplateReplayer {
 
 				}
 			}
-			HashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
+			ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
 			if(secondElement!=null){
 				for(String second : activityLabelsAltResponse){
 					if(!second.equals(event)){
@@ -197,25 +199,25 @@ public class AlternateSuccession implements LCTemplateReplayer {
 		
 		
 		activityLabelsAltPrecedence.add(event);
-		HashMap<String, Integer> counterPrec = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> counterPrec = new ConcurrentHashMap<String, Integer>();
 		if(!activityLabelsCounterAltPrecedence.containsKey(trace)){
 			activityLabelsCounterAltPrecedence.putItem(trace, counterPrec);
 		}else{
 			counterPrec = activityLabelsCounterAltPrecedence.getItem(trace);
 		}
-		HashMap<String,HashMap<String,Integer>> fulfilledForThisTrace = new HashMap<String,HashMap<String,Integer>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>> fulfilledForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>>();
 		if(!fulfilledConstraintsPerTraceAlt.containsKey(trace)){
 			fulfilledConstraintsPerTraceAlt.putItem(trace, fulfilledForThisTrace);
 		}else{
 			fulfilledForThisTrace = fulfilledConstraintsPerTraceAlt.getItem(trace);
 		}
-		HashMap<String,HashMap<String,Integer>> satisfactionsForThisTrace = new HashMap<String,HashMap<String,Integer>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>> satisfactionsForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Integer>>();
 		if(!satisfactionsConstraintsPerTrace.containsKey(trace)){
 			satisfactionsConstraintsPerTrace.putItem(trace, satisfactionsForThisTrace);
 		}else{
 			satisfactionsForThisTrace = satisfactionsConstraintsPerTrace.getItem(trace);
 		}
-		HashMap<String,HashMap<String,Boolean>> isDuplicatedForThisTrace = new HashMap<String,HashMap<String,Boolean>>();
+		ConcurrentHashMap<String,ConcurrentHashMap<String,Boolean>> isDuplicatedForThisTrace = new ConcurrentHashMap<String,ConcurrentHashMap<String,Boolean>>();
 		if(!isDuplicatedActivationPerTrace.containsKey(trace)){
 			isDuplicatedActivationPerTrace.putItem(trace, isDuplicatedForThisTrace);
 		}else{
@@ -235,11 +237,11 @@ public class AlternateSuccession implements LCTemplateReplayer {
 						isDuplicatedForThisTrace.get(existingEvent).put(event, false);
 					}
 					if(!isDuplicatedForThisTrace.containsKey(event)){
-						HashMap<String, Boolean> sec = new HashMap<String,Boolean>(); 
+						ConcurrentHashMap<String, Boolean> sec = new ConcurrentHashMap<String,Boolean>(); 
 						sec.put(existingEvent, true);
 						isDuplicatedForThisTrace.put(event, sec);
 					}
-					HashMap<String, Integer> secondElement = new  HashMap<String, Integer>();
+					ConcurrentHashMap<String, Integer> secondElement = new  ConcurrentHashMap<String, Integer>();
 					int fulfillments = 0;
 					if(fulfilledForThisTrace.containsKey(existingEvent)){
 						secondElement = fulfilledForThisTrace.get(existingEvent);
@@ -247,12 +249,12 @@ public class AlternateSuccession implements LCTemplateReplayer {
 					if(secondElement.containsKey(event)){
 						fulfillments = secondElement.get(event);
 					}
-					HashMap<String, Integer> secondSat = new  HashMap<String, Integer>();
+					ConcurrentHashMap<String, Integer> secondSat = new  ConcurrentHashMap<String, Integer>();
 					if(satisfactionsForThisTrace.containsKey(event)){
 						secondSat = satisfactionsForThisTrace.get(event);
 					}
 					secondSat.put(existingEvent, 0);
-					HashMap<String, Integer> secondSat2 = new  HashMap<String, Integer>();
+					ConcurrentHashMap<String, Integer> secondSat2 = new  ConcurrentHashMap<String, Integer>();
 					if(satisfactionsForThisTrace.containsKey(existingEvent)){
 						secondSat2 = satisfactionsForThisTrace.get(existingEvent);
 					}
@@ -302,9 +304,9 @@ public class AlternateSuccession implements LCTemplateReplayer {
 					double totPending = 0;
 
 					for(String caseId : activityLabelsCounterAltResponse.keySet()) {
-						HashMap<String, Integer> counter = activityLabelsCounterAltResponse.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTraceAlt.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> violForThisTrace = violatedConstraintsPerTrace.getItem(caseId);
+						ConcurrentHashMap<String, Integer> counter = activityLabelsCounterAltResponse.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> pendingForThisTrace = pendingConstraintsPerTraceAlt.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> violForThisTrace = violatedConstraintsPerTrace.getItem(caseId);
 						if(counter.containsKey(param1)){
 							double totnumber = counter.get(param1);
 							act = act + totnumber;
@@ -338,8 +340,8 @@ public class AlternateSuccession implements LCTemplateReplayer {
 						}
 					}
 					for(String caseId : activityLabelsCounterAltPrecedence.keySet()) {
-						HashMap<String, Integer> counter = activityLabelsCounterAltPrecedence.getItem(caseId);
-						HashMap<String, HashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceAlt.getItem(caseId);
+						ConcurrentHashMap<String, Integer> counter = activityLabelsCounterAltPrecedence.getItem(caseId);
+						ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> fulfillForThisTrace = fulfilledConstraintsPerTraceAlt.getItem(caseId);
 
 						if(counter.containsKey(param2)){
 							double totnumber = counter.get(param2);
