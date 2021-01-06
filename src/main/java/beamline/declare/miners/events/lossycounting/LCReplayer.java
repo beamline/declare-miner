@@ -15,7 +15,6 @@ import beamline.declare.miners.events.lossycounting.constraints.RespondedExisten
 import beamline.declare.miners.events.lossycounting.constraints.Response;
 import beamline.declare.miners.events.lossycounting.constraints.Succession;
 import beamline.declare.model.DeclareModel;
-import beamline.declare.model.SimplifiedDeclareModel;
 
 public class LCReplayer {
 

@@ -1,12 +1,8 @@
 package beamline.declare.model;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.PriorityQueue;
 
 import org.apache.commons.lang3.tuple.Pair;

@@ -61,7 +61,7 @@ public class LossyCountingBudget<T> extends ConcurrentHashMap<String, Triple<T, 
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public void addObservation(String caseId, Class<?> inCaseOfNull) throws InstantiationException, IllegalAccessException {
 		addObservation(caseId, (T) inCaseOfNull.newInstance());
 	}

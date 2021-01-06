@@ -47,7 +47,7 @@ public class LossyCounting<T> extends HashMap<String, Triple<T, Integer, Integer
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public void addObservation(String caseId, Integer currentBucket, Class<?> inCaseOfNull) throws InstantiationException, IllegalAccessException {
 		addObservation(caseId, currentBucket, (T) inCaseOfNull.newInstance());
 	}
