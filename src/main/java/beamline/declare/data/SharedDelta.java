@@ -1,10 +1,11 @@
 package beamline.declare.data;
 
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Triple;
+
+import com.google.common.collect.Sets;
 
 /**
  * 
@@ -20,7 +21,7 @@ public class SharedDelta {
 	 * 
 	 */
 	public SharedDelta() {
-		this.sharedItems = new HashSet<LossyCountingBudget<?>>();
+		this.sharedItems = Sets.<LossyCountingBudget<?>>newConcurrentHashSet();
 	}
 	
 	/**

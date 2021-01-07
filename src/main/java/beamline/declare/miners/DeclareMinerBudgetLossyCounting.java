@@ -14,29 +14,29 @@ import beamline.core.web.miner.models.MinerParameterValue;
 import beamline.core.web.miner.models.MinerView;
 import beamline.core.web.miner.models.MinerView.Type;
 import beamline.core.web.miner.models.notifications.RefreshViewNotification;
-import beamline.declare.miners.events.lossycounting.LCReplayer;
+import beamline.declare.miners.events.budgetlossycounting.BudgetLCReplayer;
 import beamline.declare.model.DeclareModel;
 import beamline.declare.model.SimplifiedDeclareModel;
 import beamline.declare.view.DeclareModelView;
 
 @ExposedMiner(
-	name = "Declare Miner with Lossy Counting",
+	name = "Declare Miner with Budget Lossy Counting",
 	description = "This miner discovers a Declare model",
 	configurationParameters = {
-		@ExposedMinerParameter(name = "Maximal error", type = MinerParameter.Type.DOUBLE, defaultValue = "0.005")
+		@ExposedMinerParameter(name = "Budget size", type = MinerParameter.Type.INTEGER, defaultValue = "1000")
 	},
 	viewParameters = {
 		@ExposedMinerParameter(name = "Number of constraints to show", type = MinerParameter.Type.INTEGER, defaultValue = "10"),
 		@ExposedMinerParameter(name = "Update model frequency", type = MinerParameter.Type.INTEGER, defaultValue = "1000")
 	}
 )
-public class DeclareMiner extends AbstractMiner {
+public class DeclareMinerBudgetLossyCounting extends AbstractMiner {
 
 	// configuration variables
 	private int eventsReceived = 0;
-	private double maximalError = 0.005;
-	private LCReplayer replayer = new LCReplayer();
-	private int bucketWidth;
+	private double budgetSize = 1000;
+	private static int CONSTRAINT_NUMBER = 11;
+	private BudgetLCReplayer replayer;
 	
 	private int modelUpdateFrequency = 1000;
 	private int constraintsToShow = 10;
@@ -44,28 +44,21 @@ public class DeclareMiner extends AbstractMiner {
 	@Override
 	public void configure(Collection<MinerParameterValue> collection) {
 		for(MinerParameterValue v : collection) {
-			if (v.getName().equals("Maximal error") && v.getType() == MinerParameter.Type.DOUBLE) {
-				maximalError = Double.parseDouble(v.getValue().toString());
+			if (v.getName().equals("Budget size") && v.getType() == MinerParameter.Type.INTEGER) {
+				budgetSize = Integer.parseInt(v.getValue().toString());
 			}
 		}
 		
-		bucketWidth = (int)(1.0 / maximalError);
+		replayer = new BudgetLCReplayer((int) (budgetSize / CONSTRAINT_NUMBER));
 	}
 
 	@Override
 	public void consumeEvent(String caseID, String activityName) {
 		// statistics update
 		eventsReceived++;
-		int currentBucket = (int)((double)eventsReceived / (double)bucketWidth);
 
 		// data structure update
-		replayer.addObservation(caseID, currentBucket);
 		replayer.process(activityName, caseID);
-
-		// events cleanup
-		if (eventsReceived % bucketWidth == 0) {
-			replayer.cleanup(currentBucket);
-		}
 
 		// incrementally update the model
 		if (eventsReceived == 1 || eventsReceived % modelUpdateFrequency == 0) {
