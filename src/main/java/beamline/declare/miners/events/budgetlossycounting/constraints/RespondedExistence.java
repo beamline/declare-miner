@@ -86,22 +86,24 @@ public class RespondedExistence implements BudgetLCTemplateReplayer {
 				}
 			}
 
-			ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
-			for (String second : secondElement.keySet()) {
-				if (!second.equals(event)) {
-					if (!counter.containsKey(second)) {
-						Integer pendingNo = secondElement.get(second);
-						pendingNo ++;
-						secondElement.put(second, pendingNo);
-					} else {
-						secondElement.put(second, 0);
+			if (pendingForThisTrace.contains(event)) {
+				ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
+				for (String second : secondElement.keySet()) {
+					if (!second.equals(event)) {
+						if (!counter.containsKey(second)) {
+							Integer pendingNo = secondElement.get(second);
+							pendingNo ++;
+							secondElement.put(second, pendingNo);
+						} else {
+							secondElement.put(second, 0);
+						}
 					}
 				}
+				pendingForThisTrace.put(event,secondElement);
+				pendingConstraintsPerTraceRe.addObservation(caseId, class1);
+				pendingConstraintsPerTraceRe.putItem(caseId, pendingForThisTrace);
+	//			pendingConstraintsPerTraceRe.put(trace, pendingForThisTrace);
 			}
-			pendingForThisTrace.put(event,secondElement);
-			pendingConstraintsPerTraceRe.addObservation(caseId, class1);
-			pendingConstraintsPerTraceRe.putItem(caseId, pendingForThisTrace);
-//			pendingConstraintsPerTraceRe.put(trace, pendingForThisTrace);
 		}
 
 		//update the counter for the current trace and the current event

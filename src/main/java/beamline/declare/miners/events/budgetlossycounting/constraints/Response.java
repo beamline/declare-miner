@@ -82,18 +82,20 @@ public class Response implements BudgetLCTemplateReplayer {
 //					pendingConstraintsPerTrace.put(caseId, pendingForThisTrace);
 				}
 			}
-			ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
-			for (String second : secondElement.keySet()) {
-				if (!second.equals(event)) {
-					Integer pendingNo = secondElement.get(second);
-					pendingNo++;
-					secondElement.put(second, pendingNo);
+			if (pendingForThisTrace.contains(event)) {
+				ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
+				for (String second : secondElement.keySet()) {
+					if (!second.equals(event)) {
+						Integer pendingNo = secondElement.get(second);
+						pendingNo++;
+						secondElement.put(second, pendingNo);
+					}
 				}
+				pendingForThisTrace.put(event, secondElement);
+				pendingConstraintsPerTrace.addObservation(caseId, class1);
+				pendingConstraintsPerTrace.putItem(caseId, pendingForThisTrace);
+	//			pendingConstraintsPerTrace.put(caseId, pendingForThisTrace);
 			}
-			pendingForThisTrace.put(event, secondElement);
-			pendingConstraintsPerTrace.addObservation(caseId, class1);
-			pendingConstraintsPerTrace.putItem(caseId, pendingForThisTrace);
-//			pendingConstraintsPerTrace.put(caseId, pendingForThisTrace);
 
 			// activityLabelsCounter.put(trace, counter);
 		}

@@ -122,20 +122,22 @@ public class AlternateResponse implements BudgetLCTemplateReplayer {
 
 				}
 			}
-			ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
-			for(String second : secondElement.keySet()){
-				if(!second.equals(event)){
-					Integer pendingNo = secondElement.get(second);
-					pendingNo ++;
-					secondElement.put(second, pendingNo);
+			if (pendingForThisTrace.contains(event)) {
+				ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
+				for(String second : secondElement.keySet()){
+					if(!second.equals(event)){
+						Integer pendingNo = secondElement.get(second);
+						pendingNo ++;
+						secondElement.put(second, pendingNo);
+					}
 				}
+				pendingForThisTrace.put(event,secondElement);
+				
+				pendingConstraintsPerTraceAlt.addObservation(trace, class1);
+				pendingConstraintsPerTraceAlt.putItem(trace, pendingForThisTrace);
+	
+				//activityLabelsCounter.put(trace, counter);
 			}
-			pendingForThisTrace.put(event,secondElement);
-			
-			pendingConstraintsPerTraceAlt.addObservation(trace, class1);
-			pendingConstraintsPerTraceAlt.putItem(trace, pendingForThisTrace);
-
-			//activityLabelsCounter.put(trace, counter);
 		}
 
 		//update the counter for the current trace and the current event

@@ -120,17 +120,19 @@ public class Succession implements BudgetLCTemplateReplayer {
 			fulfilledConstraintsPerTraceSuccession.addObservation(caseId, class1);
 			fulfilledConstraintsPerTraceSuccession.putItem(caseId, fulfilledForThisTrace);
 //			fulfilledConstraintsPerTraceSuccession.put(caseId, fulfilledForThisTrace);
-			ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
-			for (String second : secondElement.keySet()) {
-				if (!second.equals(event)) {
-					Integer pendingNo = secondElement.get(second);
-					pendingNo++;
-					secondElement.put(second, pendingNo);
+			if (pendingForThisTrace.contains(event)) {
+				ConcurrentHashMap<String, Integer> secondElement = pendingForThisTrace.get(event);
+				for (String second : secondElement.keySet()) {
+					if (!second.equals(event)) {
+						Integer pendingNo = secondElement.get(second);
+						pendingNo++;
+						secondElement.put(second, pendingNo);
+					}
 				}
+				pendingForThisTrace.put(event, secondElement);
+				pendingConstraintsPerTraceSuccession.addObservation(caseId, class1);
+				pendingConstraintsPerTraceSuccession.putItem(caseId, pendingForThisTrace);
 			}
-			pendingForThisTrace.put(event, secondElement);
-			pendingConstraintsPerTraceSuccession.addObservation(caseId, class1);
-			pendingConstraintsPerTraceSuccession.putItem(caseId, pendingForThisTrace);
 //			pendingConstraintsPerTraceSuccession.put(caseId, pendingForThisTrace);
 
 			// activityLabelsCounter.put(trace, counter);
